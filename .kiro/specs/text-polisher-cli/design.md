@@ -162,7 +162,7 @@ export function buildPrompt(options: ResolvedOptions): string {
 メール形式で出力してください。挨拶→本文→締めの構造にしてください。
 
 ## カスタム定型文
-- 文頭に必ず以下を挿入: 「お疲れ様です。森山です。」
+- 文頭に必ず以下を挿入: 「お疲れ様です。」
 - 文末に必ず以下を挿入: 「以上です。よろしくお願いします。」
 
 ## 入力テキスト
@@ -204,8 +204,8 @@ export function resolveFormat(name: string): BuiltinFormat | CustomFormat | null
 ```yaml
 # ~/.text-polisher/formats.yaml
 formats:
-  moriyama-email:
-    prefix: "お疲れ様です。森山です。"
+  my-email:
+    prefix: "お疲れ様です。"
     suffix: "以上です。よろしくお願いします。"
 ```
 
@@ -239,14 +239,14 @@ program
 
 ```
 1. ユーザー入力
-   text-polisher --level formal --format moriyama-email "明日休むわ"
+   text-polisher --level formal --format my-email "明日休むわ"
 
 2. CLI解析 (Commander.js)
-   → { text: "明日休むわ", level: "formal", format: "moriyama-email", engine: "claude" }
+   → { text: "明日休むわ", level: "formal", format: "my-email", engine: "claude" }
 
 3. フォーマット解決
-   → "moriyama-email" は ~/.text-polisher/formats.yaml にある
-   → { prefix: "お疲れ様です。森山です。", suffix: "以上です。よろしくお願いします。" }
+   → "my-email" は ~/.text-polisher/formats.yaml にある
+   → { prefix: "お疲れ様です。", suffix: "以上です。よろしくお願いします。" }
 
 4. プロンプト構築
    → レベル指示 + カスタムフォーマット指示 + 入力テキスト を結合
@@ -257,7 +257,7 @@ program
 6. 結果出力
    → stdout に変換後テキストのみ出力
 
-   お疲れ様です。森山です。
+   お疲れ様です。
    明日、お休みをいただきます。
    以上です。よろしくお願いします。
 ```

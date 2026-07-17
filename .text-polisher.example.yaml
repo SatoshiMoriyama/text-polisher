@@ -5,12 +5,12 @@
 #   cp .text-polisher.example.yaml ~/.text-polisher/formats.yaml
 #
 # 使い方:
-#   text-polisher --format moriyama-email "明日休むわ"
+#   text-polisher --format my-email "明日休むわ"
 
 formats:
   # 自分用メールテンプレート
-  moriyama-email:
-    prefix: "お疲れ様です。森山です。"
+  my-email:
+    prefix: "お疲れ様です。"
     suffix: "以上です。よろしくお願いします。"
 
   # 週次報告テンプレート
@@ -20,7 +20,7 @@ formats:
 
   # 社外向けメールテンプレート
   client-email:
-    prefix: "いつもお世話になっております。株式会社〇〇の森山です。"
+    prefix: "いつもお世話になっております。"
     suffix: "何卒よろしくお願い申し上げます。"
 
   # 依頼テンプレート

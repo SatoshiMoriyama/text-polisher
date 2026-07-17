@@ -122,8 +122,8 @@ cp .text-polisher.example.yaml ~/.text-polisher/formats.yaml
 ```yaml
 # ~/.text-polisher/formats.yaml
 formats:
-  moriyama-email:
-    prefix: "お疲れ様です。森山です。"
+  my-email:
+    prefix: "お疲れ様です。"
     suffix: "以上です。よろしくお願いします。"
 
   weekly-report:
@@ -131,20 +131,20 @@ formats:
     suffix: "以上、ご確認よろしくお願いいたします。"
 
   client-email:
-    prefix: "いつもお世話になっております。株式会社〇〇の森山です。"
+    prefix: "いつもお世話になっております。"
     suffix: "何卒よろしくお願い申し上げます。"
 ```
 
 ### 使用例
 
 ```bash
-text-polisher --format moriyama-email "明日休むわ"
-# → お疲れ様です。森山です。
+text-polisher --format my-email "明日休むわ"
+# → お疲れ様です。
 #   明日、お休みをいただきます。
 #   以上です。よろしくお願いします。
 
 text-polisher --level formal --format client-email "来週打ち合わせしたい"
-# → いつもお世話になっております。株式会社〇〇の森山です。
+# → いつもお世話になっております。
 #   来週、お打ち合わせのお時間を頂戴できますでしょうか。
 #   何卒よろしくお願い申し上げます。
 ```

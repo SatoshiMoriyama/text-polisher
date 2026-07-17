@@ -75,8 +75,8 @@
 ```yaml
 # ~/.text-polisher/formats.yaml
 formats:
-  moriyama-email:
-    prefix: "お疲れ様です。森山です。"
+  my-email:
+    prefix: "お疲れ様です。"
     suffix: "以上です。よろしくお願いします。"
 
   weekly-report:
@@ -136,8 +136,8 @@ text-polisher --format email "明日の会議、資料送って"
 #   よろしくお願いいたします。
 
 # カスタムフォーマット指定
-text-polisher --format moriyama-email "明日休むわ"
-# → お疲れ様です。森山です。
+text-polisher --format my-email "明日休むわ"
+# → お疲れ様です。
 #   明日、お休みをいただきます。
 #   以上です。よろしくお願いします。
 
