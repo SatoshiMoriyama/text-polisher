@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { platform } from 'node:os';
 import type { Engine, EngineResult } from '../types.js';
 import type { EngineAdapter } from './index.js';
 
@@ -12,7 +13,8 @@ export class ClaudeEngine implements EngineAdapter {
 
   async isAvailable(): Promise<boolean> {
     try {
-      await execFileAsync('which', ['claude']);
+      const cmd = platform() === 'win32' ? 'where' : 'which';
+      await execFileAsync(cmd, ['claude']);
       return true;
     } catch {
       return false;
