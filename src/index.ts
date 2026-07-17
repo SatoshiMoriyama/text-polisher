@@ -83,7 +83,7 @@ program
     }
   });
 
-program.parse();
+program.parseAsync();
 
 // --- Helper functions ---
 
