@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { platform } from 'node:os';
 import type { Engine, EngineResult } from '../types.js';
@@ -22,44 +22,54 @@ export class KiroEngine implements EngineAdapter {
   }
 
   async execute(prompt: string): Promise<EngineResult> {
-    try {
-      const { stdout } = await execFileAsync(
+    return new Promise((resolve, reject) => {
+      // Pass prompt via stdin to avoid:
+      // 1. Exposing input text in process list
+      // 2. Hitting OS argument length limits on long prompts
+      const child = spawn(
         'kiro-cli',
-        ['chat', '--no-interactive', '--trust-tools=none', prompt],
+        ['chat', '--no-interactive', '--trust-tools=none'],
         {
-          timeout: TIMEOUT_MS,
-          maxBuffer: 1024 * 1024, // 1MB
+          stdio: ['pipe', 'pipe', 'pipe'],
           env: { ...process.env },
         }
       );
 
-      // kiro-cli may include extra output (credits info, etc.)
-      // Extract the actual response content
-      const output = this.extractResponse(stdout);
+      let stdout = '';
+      let stderr = '';
 
-      return {
-        output: output.trim(),
-        exitCode: 0,
-      };
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'killed' in error && error.killed) {
-        throw new Error('エンジンの応答がタイムアウトしました（60秒）');
-      }
+      child.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
 
-      const stderr =
-        error && typeof error === 'object' && 'stderr' in error
-          ? String((error as { stderr: unknown }).stderr)
-          : '';
-      const code =
-        error && typeof error === 'object' && 'code' in error
-          ? Number((error as { code: unknown }).code)
-          : 1;
+      child.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
 
-      return {
-        output: stderr,
-        exitCode: code,
-      };
-    }
+      // Write prompt to stdin and close
+      child.stdin.write(prompt);
+      child.stdin.end();
+
+      const timeout = setTimeout(() => {
+        child.kill();
+        reject(new Error('エンジンの応答がタイムアウトしました（60秒）'));
+      }, TIMEOUT_MS);
+
+      child.on('close', (code) => {
+        clearTimeout(timeout);
+        const output = this.extractResponse(stdout);
+        if (code === 0) {
+          resolve({ output: output.trim(), exitCode: 0 });
+        } else {
+          resolve({ output: stderr || output, exitCode: code ?? 1 });
+        }
+      });
+
+      child.on('error', (err) => {
+        clearTimeout(timeout);
+        resolve({ output: err.message, exitCode: 1 });
+      });
+    });
   }
 
   private extractResponse(stdout: string): string {

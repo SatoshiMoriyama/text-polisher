@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { platform } from 'node:os';
 import type { Engine, EngineResult } from '../types.js';
@@ -22,39 +22,48 @@ export class ClaudeEngine implements EngineAdapter {
   }
 
   async execute(prompt: string): Promise<EngineResult> {
-    try {
-      const { stdout } = await execFileAsync(
-        'claude',
-        ['-p', prompt, '--output-format', 'text'],
-        {
-          timeout: TIMEOUT_MS,
-          maxBuffer: 1024 * 1024, // 1MB
-          env: { ...process.env },
+    return new Promise((resolve, reject) => {
+      // Pass prompt via stdin to avoid:
+      // 1. Exposing input text in process list
+      // 2. Hitting OS argument length limits on long prompts
+      const child = spawn('claude', ['-p', '--output-format', 'text'], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env },
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      // Write prompt to stdin and close
+      child.stdin.write(prompt);
+      child.stdin.end();
+
+      const timeout = setTimeout(() => {
+        child.kill();
+        reject(new Error('エンジンの応答がタイムアウトしました（60秒）'));
+      }, TIMEOUT_MS);
+
+      child.on('close', (code) => {
+        clearTimeout(timeout);
+        if (code === 0) {
+          resolve({ output: stdout.trim(), exitCode: 0 });
+        } else {
+          resolve({ output: stderr || stdout, exitCode: code ?? 1 });
         }
-      );
+      });
 
-      return {
-        output: stdout.trim(),
-        exitCode: 0,
-      };
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'killed' in error && error.killed) {
-        throw new Error('エンジンの応答がタイムアウトしました（60秒）');
-      }
-
-      const stderr =
-        error && typeof error === 'object' && 'stderr' in error
-          ? String((error as { stderr: unknown }).stderr)
-          : '';
-      const code =
-        error && typeof error === 'object' && 'code' in error
-          ? Number((error as { code: unknown }).code)
-          : 1;
-
-      return {
-        output: stderr,
-        exitCode: code,
-      };
-    }
+      child.on('error', (err) => {
+        clearTimeout(timeout);
+        resolve({ output: err.message, exitCode: 1 });
+      });
+    });
   }
 }
