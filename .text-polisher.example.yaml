@@ -1,0 +1,29 @@
+# カスタムフォーマット設定ファイル
+#
+# このファイルを ~/.text-polisher/formats.yaml にコピーして使用してください:
+#   mkdir -p ~/.text-polisher
+#   cp .text-polisher.example.yaml ~/.text-polisher/formats.yaml
+#
+# 使い方:
+#   text-polisher --format moriyama-email "明日休むわ"
+
+formats:
+  # 自分用メールテンプレート
+  moriyama-email:
+    prefix: "お疲れ様です。森山です。"
+    suffix: "以上です。よろしくお願いします。"
+
+  # 週次報告テンプレート
+  weekly-report:
+    prefix: "今週の報告です。"
+    suffix: "以上、ご確認よろしくお願いいたします。"
+
+  # 社外向けメールテンプレート
+  client-email:
+    prefix: "いつもお世話になっております。株式会社〇〇の森山です。"
+    suffix: "何卒よろしくお願い申し上げます。"
+
+  # 依頼テンプレート
+  request:
+    prefix: "お忙しいところ恐れ入りますが、"
+    suffix: "ご対応いただけますと幸いです。よろしくお願いいたします。"
