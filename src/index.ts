@@ -111,17 +111,36 @@ function readStdin(): Promise<string> {
     }
 
     let data = '';
-    process.stdin.setEncoding('utf-8');
-    process.stdin.on('data', (chunk) => {
-      data += chunk;
-    });
-    process.stdin.on('end', () => {
-      resolve(data);
-    });
-    // Timeout for stdin reading (2 seconds)
-    setTimeout(() => {
-      resolve(data);
+    let receivedData = false;
+
+    // Timeout only fires if no data arrives at all (e.g., fd open but no writer)
+    const timeout = setTimeout(() => {
+      if (!receivedData) {
+        cleanup();
+        resolve('');
+      }
     }, 2000);
+
+    const onData = (chunk: string) => {
+      receivedData = true;
+      clearTimeout(timeout);
+      data += chunk;
+    };
+
+    const onEnd = () => {
+      cleanup();
+      resolve(data);
+    };
+
+    const cleanup = () => {
+      clearTimeout(timeout);
+      process.stdin.removeListener('data', onData);
+      process.stdin.removeListener('end', onEnd);
+    };
+
+    process.stdin.setEncoding('utf-8');
+    process.stdin.on('data', onData);
+    process.stdin.on('end', onEnd);
   });
 }
 
