@@ -12,7 +12,6 @@ const FORMAT_INSTRUCTIONS: Record<BuiltinFormat, string> = {
 以下のルールに従ってください：
 - 簡潔に1〜3文でまとめる
 - 適度に絵文字を使ってもよい（使いすぎない）
-- カジュアルすぎず、でも堅すぎない
 - 改行は最小限に`,
 
   document: `文書形式で出力してください。
