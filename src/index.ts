@@ -165,8 +165,7 @@ function readInteractiveInput(): Promise<string> {
 
     const rl = createInterface({
       input: process.stdin,
-      output: process.stderr,
-      terminal: true,
+      terminal: false,
     });
 
     const lines: string[] = [];
