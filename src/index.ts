@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createInterface } from 'node:readline';
 import { Command } from 'commander';
 import { buildPrompt } from './prompt/index.js';
 import { resolveOptions } from './config/index.js';
@@ -99,6 +100,14 @@ async function resolveInputText(argText: string | undefined): Promise<string> {
     return stdinText.trim();
   }
 
+  // If stdin is a TTY, enter interactive input mode
+  if (process.stdin.isTTY) {
+    const interactiveText = await readInteractiveInput();
+    if (interactiveText && interactiveText.trim()) {
+      return interactiveText.trim();
+    }
+  }
+
   throw new Error('テキストを入力してください');
 }
 
@@ -147,6 +156,33 @@ function readStdin(): Promise<string> {
 function resolveEngineName(optEngine?: string): string {
   if (optEngine) return optEngine;
   return process.env.TEXT_POLISHER_ENGINE || 'claude';
+}
+
+function readInteractiveInput(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // Print prompt to stderr so it does not mix with polished output
+    process.stderr.write('テキストを入力してください（入力後、Ctrl+D で確定）:\n');
+
+    const rl = createInterface({
+      input: process.stdin,
+      terminal: false,
+    });
+
+    const lines: string[] = [];
+
+    rl.on('line', (line) => {
+      lines.push(line);
+    });
+
+    rl.on('close', () => {
+      resolve(lines.join('\n'));
+    });
+
+    rl.on('error', (err) => {
+      rl.close();
+      reject(err);
+    });
+  });
 }
 
 function printEngineNotFound(engine: Engine): void {
