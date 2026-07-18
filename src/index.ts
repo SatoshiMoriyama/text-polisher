@@ -21,7 +21,7 @@ program
   .description('適当な日本語を丁寧な文章に変換するCLIツール')
   .version('0.1.0')
   .argument('[text]', '変換するテキスト')
-  .option('--level <level>', `丁寧さレベル (${LEVELS.join('|')})`, 'polite')
+  .option('--level <level>', `丁寧さレベル (${LEVELS.join('|')})`, 'formal')
   .option('--format <format>', '出力フォーマット (email|slack|document|カスタム名)')
   .option('--engine <engine>', `AIエンジン (${ENGINES.join('|')})`)
   .action(async (text: string | undefined, opts: { level: string; format?: string; engine?: string }) => {
